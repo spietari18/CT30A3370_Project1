@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <linux/limits.h>
 
 // Define list structures
 struct oneRow {
@@ -14,5 +15,6 @@ struct fileRows {
 typedef struct fileRows rowList;
 
 int main(int argc, char *argv[]);
-char * readFile(char fileName[]);
-void writeFile(char fileName[], rowList *firstRow);
+FILE* openFile(char fileName[PATH_MAX], char rw)
+rowList* readFile(FILE *inputFile);
+void writeFile(FILE *outputFile, rowList *firstRow);
