@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <linux/limits.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
 
 // Define list structures
 struct oneRow {
@@ -21,3 +23,5 @@ rowList* readFile(FILE *inputFile);
 void writeFile(FILE *outputFile, rowList *firstRow);
 wordList* appendWord(wordList *pBegin, char word[PATH_MAX]);
 rowList* appendRow(rowList *pBegin, wordList *pRow);
+rowList* printRows(rowList *pBegin, FILE *outputFile);
+wordList* printWords(wordList *pBegin, FILE *outputFile);
