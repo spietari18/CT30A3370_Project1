@@ -2,21 +2,27 @@
 
 // Main
 int main(int argc, char *argv[]) {
+    // Init variables
     FILE *inputFile;
     FILE *outputFile;
+    rowList *pRows = NULL;
+    wordList *pWords = NULL;
+    char cache[PATH_MAX];
+    char *newLine;
 
+    // Handle arguments, set input & output files
     if (argc > 3) {
-        fprintf(stderr, "usage: reverse <input> <output>");
+        fprintf(stderr, "usage: reverse <input> <output>\n");
     }
     else if (argc == 3) {
         if (argv[1] == argv[2]) {
-            fprintf(stderr, "Input and output file must differ");
+            fprintf(stderr, "Input and output file must differ\n");
             exit(1);
         }
         if ((inputFile = fopen(argv[1], "r")) == NULL) {
             fileError(argv[1]);
         }
-        if ((inputFile = fopen(argv[2], "w")) == NULL) {
+        if ((outputFile = fopen(argv[2], "w")) == NULL) {
             fileError(argv[2]);
         }
     }
@@ -31,28 +37,41 @@ int main(int argc, char *argv[]) {
         outputFile = stdout;
     }
     else {
-        fprintf(stderr, "This error shouldn't happen!");
+        fprintf(stderr, "This error shouldn't happen!\n");
+        exit(1);
+    }
+
+    // Read input, save to lists
+    while (fgets(cache, PATH_MAX, inputFile) != NULL) {
+        // Word by word
+        strcpy(cache, strtok(cache, " "));
+        pWords = appendWord(pWords, cache);
+        // If contains newline
+        newLine = strstr(cache, "\n");
+        if (newLine) {
+            pRows = appendRow(pRows, pWords);
+            pWords = NULL;
+        }
+    }
+    if (pWords != NULL) {
+        pRows = appendRow(pRows, pWords);
+    }
+
+    // Print reversed, delete lists
+    if ((pRows = printRows(pRows, outputFile)) == NULL) {
+        fclose(inputFile);
+        fclose(outputFile);
+        exit(0);
+    } else {
+        fprintf(stderr, "Memory release failed!\n");
         exit(1);
     }
 }
 
 // Print file open error and exit
 void fileError(char fileName[PATH_MAX]) {
-    fprintf(stderr, "error: cannot open file '%s'", fileName);
+    fprintf(stderr, "error: cannot open file '%s'\n", fileName);
     exit(1);
-}
-
-// Read file
-rowList* readFile(FILE *inputFile) {
-    //TODO
-    rowList result;
-    return &result;
-}
-
-// Write file
-void writeFile(FILE *outputFile, rowList *firstRow) {
-    //TODO
-    exit(0);
 }
 
 // Append to wordList
@@ -63,7 +82,7 @@ wordList* appendWord(wordList *pBegin, char word[PATH_MAX]) {
     if (pBegin == NULL) {
         // Reserve memory, handle possible error
         if ((ptr = (wordList *)malloc(sizeof(wordList))) == NULL) {
-            fprintf(stderr, "malloc failed");
+            fprintf(stderr, "malloc failed\n");
             exit(1);
         }
         // Save data to reserved memory slot
@@ -81,7 +100,7 @@ wordList* appendWord(wordList *pBegin, char word[PATH_MAX]) {
         }
         // Reserve memory, handle possible error
         if ((ptr = (wordList *)malloc(sizeof(wordList))) == NULL) {
-            fprintf(stderr, "malloc failed");
+            fprintf(stderr, "malloc failed\n");
             exit(1);
         }
         // Save data to reserved memory slot
@@ -102,7 +121,7 @@ rowList* appendRow(rowList *pBegin, wordList *pRow) {
     if (pBegin == NULL) {
         // Reserve memory, handle possible error
         if ((ptr = (rowList *)malloc(sizeof(rowList))) == NULL) {
-            fprintf(stderr, "malloc failed");
+            fprintf(stderr, "malloc failed\n");
             exit(1);
         }
         // Save data to reserved memory slot
@@ -120,7 +139,7 @@ rowList* appendRow(rowList *pBegin, wordList *pRow) {
         }
         // Reserve memory, handle possible error
         if ((ptr = (rowList *)malloc(sizeof(rowList))) == NULL) {
-            fprintf(stderr, "malloc failed");
+            fprintf(stderr, "malloc failed\n");
             exit(1);
         }
         // Save data to reserved memory slot
@@ -141,10 +160,14 @@ rowList* printRows(rowList *pBegin, FILE *outputFile) {
             slider = slider->pNext;
         }
         if (slider == pBegin) {
+            if(printWords(slider->pRow, outputFile) != NULL) {
+                fprintf(stderr, "Error while removing the last row from a list\n");
+            }
+            free(pBegin);
             break;
         }
-        if(printWords(slider->pRow, outputFile) != NULL) {
-            fprintf(stderr, "Error while removing row from a list");
+        if((printWords(slider->pRow, outputFile)) != NULL) {
+            fprintf(stderr, "Error while removing a row from a list\n");
         }
         free(slider);
         slider = pBegin;
@@ -160,9 +183,13 @@ wordList* printWords(wordList *pBegin, FILE *outputFile) {
             slider = slider->pNext;
         }
         if (slider == pBegin) {
+            fprintf(outputFile, pBegin->word);
+            fprintf(stdout, pBegin->word);
+            free(pBegin);
             break;
         }
         fprintf(outputFile, slider->word);
+        fprintf(stdout, slider->word);
         free(slider);
         slider = pBegin;
     }
