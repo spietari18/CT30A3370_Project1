@@ -7,8 +7,9 @@ int main(int argc, char *argv[]) {
     FILE *outputFile;
     rowList *pRows = NULL;
     wordList *pWords = NULL;
-    char cache[PATH_MAX];
-    char *newLine;
+    char buffer[PATH_MAX];
+    char *token;
+    const char ch_return = '\n';
 
     // Handle arguments, set input & output files
     if (argc > 3) {
@@ -40,21 +41,27 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "This error shouldn't happen!\n");
         exit(1);
     }
-
+    
     // Read input, save to lists
-    while (fgets(cache, PATH_MAX, inputFile) != NULL) {
+    while (fgets(buffer, PATH_MAX, inputFile) != NULL) {
         // Word by word
-        strcpy(cache, strtok(cache, " "));
-        pWords = appendWord(pWords, cache);
-        // If contains newline
-        newLine = strstr(cache, "\n");
-        if (newLine) {
-            pRows = appendRow(pRows, pWords);
-            pWords = NULL;
+        token = strtok(buffer, " ");
+
+        // Go through all words before line break
+        while (token != NULL) {
+            pWords = appendWord(pWords, token);
+            // New line found!
+            if (strchr(token, ch_return) != NULL) {
+                pRows = appendRow(pRows, pWords);
+                pWords = NULL;
+            }
+            // Add spaces removed by strtok if no newline found
+            else {
+                pWords = appendWord(pWords, " ");
+            }
+            // Next word
+            token = strtok(NULL, " ");
         }
-    }
-    if (pWords != NULL) {
-        pRows = appendRow(pRows, pWords);
     }
 
     // Print reversed, delete lists
@@ -75,7 +82,7 @@ void fileError(char fileName[PATH_MAX]) {
 }
 
 // Append to wordList
-wordList* appendWord(wordList *pBegin, char word[PATH_MAX]) {
+wordList* appendWord(wordList *pBegin, char *token) {
     // Create a temporary pointer for memory to be reserved
     wordList *ptr = NULL;
     // If list doesn't exist
@@ -87,23 +94,27 @@ wordList* appendWord(wordList *pBegin, char word[PATH_MAX]) {
         }
         // Save data to reserved memory slot
         ptr->pNext = NULL;
-        strcpy(ptr->word, word);
+        strcpy(ptr->word, token);
         // Save address to begin of list
         pBegin = ptr;
     }
     // List already exists
     else {
+        // To the end of list
+        wordList *slider = pBegin;
+        while (slider->pNext != NULL) {
+            slider = slider->pNext;
+        }
         // Reserve memory, handle possible error
         if ((ptr = (wordList *)malloc(sizeof(wordList))) == NULL) {
             fprintf(stderr, "malloc failed\n");
             exit(1);
         }
-        // New data at the begin of the list
-        ptr->pNext = pBegin;
         // Save data to reserved memory slot
-        strcpy(ptr->word, word);
-        // Set new list begin
-        pBegin = ptr;
+        strcpy(ptr->word, token);
+        ptr->pNext = NULL;
+        // Set new slot to the end of list
+        slider->pNext = ptr;
     }
     // Return address of lists begin
     return pBegin;
@@ -150,7 +161,7 @@ rowList* printRows(rowList *pBegin, FILE *outputFile) {
     while (pBegin != NULL) {
         pBegin = ptr->pNext;
         if (printWords(ptr->pRow, outputFile) != NULL) {
-            fprintf(stderr, "Error while printing row!");
+            fprintf(stderr, "Error while printing row!\n");
         }
         free(ptr);
         ptr = pBegin;
@@ -164,7 +175,7 @@ wordList* printWords(wordList *pBegin, FILE *outputFile) {
     while (pBegin != NULL) {
         pBegin = ptr->pNext;
         fprintf(outputFile, ptr->word);
-        fprintf(stdout, ptr->word);
+        //fprintf(stdout, ptr->word);
         free(ptr);
         ptr = pBegin;
     }
