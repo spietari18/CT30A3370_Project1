@@ -1,5 +1,3 @@
-#define _GNU_SOURCE
-
 #include <stdio.h>
 #include <linux/limits.h>
 #include <stdlib.h>
@@ -21,7 +19,6 @@ typedef struct fileRows rowList;
 
 int main(int argc, char *argv[]);
 void fileError(char fileName[PATH_MAX]);
-//wordList* appendWord(wordList *pBegin, char word[PATH_MAX]);
 wordList* appendWord(wordList *pBegin, char *word);
 rowList* appendRow(rowList *pBegin, wordList *pRow);
 rowList* printRows(rowList *pBegin, FILE *outputFile);

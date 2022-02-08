@@ -14,6 +14,7 @@ int main(int argc, char *argv[]) {
     // Handle arguments, set input & output files
     if (argc > 3) {
         fprintf(stderr, "usage: reverse <input> <output>\n");
+        exit(1);
     }
     else if (argc == 3) {
         if (argv[1] == argv[2]) {
@@ -39,7 +40,7 @@ int main(int argc, char *argv[]) {
     }
     else {
         fprintf(stderr, "This error shouldn't happen!\n");
-        exit(1);
+        exit(2);
     }
     
     // Read input, save to lists
@@ -71,7 +72,7 @@ int main(int argc, char *argv[]) {
         exit(0);
     } else {
         fprintf(stderr, "Memory release failed!\n");
-        exit(1);
+        exit(2);
     }
 }
 
@@ -162,6 +163,7 @@ rowList* printRows(rowList *pBegin, FILE *outputFile) {
         pBegin = ptr->pNext;
         if (printWords(ptr->pRow, outputFile) != NULL) {
             fprintf(stderr, "Error while printing row!\n");
+            exit(2);
         }
         free(ptr);
         ptr = pBegin;
@@ -175,7 +177,6 @@ wordList* printWords(wordList *pBegin, FILE *outputFile) {
     while (pBegin != NULL) {
         pBegin = ptr->pNext;
         fprintf(outputFile, ptr->word);
-        //fprintf(stdout, ptr->word);
         free(ptr);
         ptr = pBegin;
     }
