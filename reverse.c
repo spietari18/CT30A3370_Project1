@@ -93,21 +93,17 @@ wordList* appendWord(wordList *pBegin, char word[PATH_MAX]) {
     }
     // List already exists
     else {
-        // Loop through the list to the end
-        wordList *slider = pBegin;
-        while (slider->pNext != NULL) {
-            slider = slider->pNext;
-        }
         // Reserve memory, handle possible error
         if ((ptr = (wordList *)malloc(sizeof(wordList))) == NULL) {
             fprintf(stderr, "malloc failed\n");
             exit(1);
         }
+        // New data at the begin of the list
+        ptr->pNext = pBegin;
         // Save data to reserved memory slot
-        ptr->pNext = NULL;
         strcpy(ptr->word, word);
-        // Save address to the end of list
-        slider->pNext = ptr;
+        // Set new list begin
+        pBegin = ptr;
     }
     // Return address of lists begin
     return pBegin;
@@ -132,21 +128,17 @@ rowList* appendRow(rowList *pBegin, wordList *pRow) {
     }
     // List already exists
     else {
-        // Loop through the list to the end
-        rowList *slider = pBegin;
-        while (slider->pNext != NULL) {
-            slider = slider->pNext;
-        }
         // Reserve memory, handle possible error
-        if ((ptr = (rowList *)malloc(sizeof(rowList))) == NULL) {
+        if ((ptr = (rowList *)malloc(sizeof(wordList))) == NULL) {
             fprintf(stderr, "malloc failed\n");
             exit(1);
         }
+        // New data at the begin of the list
+        ptr->pNext = pBegin;
         // Save data to reserved memory slot
-        ptr->pNext = NULL;
         ptr->pRow = pRow;
-        // Save address to the end of list
-        slider->pNext = ptr;
+        // Set new begin
+        pBegin = ptr;
     }
     // Return address of lists begin
     return pBegin;
@@ -154,44 +146,27 @@ rowList* appendRow(rowList *pBegin, wordList *pRow) {
 
 // Print & Delete rowList
 rowList* printRows(rowList *pBegin, FILE *outputFile) {
-    rowList *slider = pBegin;
-    while (true) {
-        while (slider->pNext != NULL) {
-            slider = slider->pNext;
+    rowList *ptr = pBegin;
+    while (pBegin != NULL) {
+        pBegin = ptr->pNext;
+        if (printWords(ptr->pRow, outputFile) != NULL) {
+            fprintf(stderr, "Error while printing row!");
         }
-        if (slider == pBegin) {
-            if(printWords(slider->pRow, outputFile) != NULL) {
-                fprintf(stderr, "Error while removing the last row from a list\n");
-            }
-            free(pBegin);
-            break;
-        }
-        if((printWords(slider->pRow, outputFile)) != NULL) {
-            fprintf(stderr, "Error while removing a row from a list\n");
-        }
-        free(slider);
-        slider = pBegin;
+        free(ptr);
+        ptr = pBegin;
     }
     return pBegin;
 }
 
 // Print & Delete wordList
 wordList* printWords(wordList *pBegin, FILE *outputFile) {
-    wordList *slider = pBegin;
-    while (true) {
-        while (slider->pNext != NULL) {
-            slider = slider->pNext;
-        }
-        if (slider == pBegin) {
-            fprintf(outputFile, pBegin->word);
-            fprintf(stdout, pBegin->word);
-            free(pBegin);
-            break;
-        }
-        fprintf(outputFile, slider->word);
-        fprintf(stdout, slider->word);
-        free(slider);
-        slider = pBegin;
+    wordList *ptr = pBegin;
+    while (pBegin != NULL) {
+        pBegin = ptr->pNext;
+        fprintf(outputFile, ptr->word);
+        fprintf(stdout, ptr->word);
+        free(ptr);
+        ptr = pBegin;
     }
     return pBegin;
 }
