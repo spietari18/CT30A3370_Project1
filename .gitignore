@@ -2,3 +2,6 @@ reverse
 reverse.o
 output.txt
 vgcore*
+tests/
+test-reverse.sh
+
